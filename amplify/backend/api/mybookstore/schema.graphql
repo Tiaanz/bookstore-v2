@@ -17,13 +17,11 @@ type Book
   author: String
   featured: Boolean
   price: Float
-  orders: [BookOrder] @connection(keyName: "byBook", fields: ["id"])
+  orders: [BookOrder] @hasMany
 }
 
 type BookOrder
   @model(queries: null, subscriptions: null)
-  @key(name: "byBook", fields: ["book_id", "order_id"])
-  @key(name: "byOrder", fields: ["order_id", "book_id"])
   @auth(
     rules: [
       # allow admins to create bookorders for customers by using customer email in lambda
@@ -32,10 +30,10 @@ type BookOrder
     ]
   ) {
   id: ID!
-  book_id: ID!
-  order_id: ID!
-  book: Book @connection(fields: ["book_id"])
-  order: Order @connection(fields: ["order_id"])
+  book_id: ID! @index
+  order_id: ID! @index
+  book: Book @hasOne
+  order: Order @hasOne
 }
 
 type Order
@@ -48,12 +46,12 @@ type Order
       { allow: groups, groups: ["Admin"] }
     ]
   )
-  @key(name: "byUser", fields: ["user"]) {
+  {
   id: ID!
-  user: String!
+  user: String! @index
   date: String
   total: Float
-  books: [BookOrder] @connection(keyName: "byOrder", fields: ["id"])
+  books: [BookOrder] @hasMany
 }
 
 enum OrderStatus {
